@@ -1,16 +1,7 @@
 import discord
 
-from . import responses
+from .commands import handle_command
 from .global_vars import PREFIX, TOKEN
-
-async def send_message(message, message_content):
-    try:
-        response = responses.handle_response(message_content)
-        await message.channel.send(response)
-
-    except Exception as e:
-        print(e)
-
 
 def client_run():
     intents = discord.Intents.all()
@@ -29,9 +20,10 @@ def client_run():
 
         print(f"{username} said: {message_content} on {channel}")
 
-        if message_content[0] == PREFIX:
+        if message_content.startswith(PREFIX):
             message_content = message_content[1:]
-            await send_message(message, message_content)
+            await handle_command(message, message_content)
 
 
     client.run(TOKEN)
+

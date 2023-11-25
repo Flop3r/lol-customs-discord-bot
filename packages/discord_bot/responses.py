@@ -1,5 +1,5 @@
-def handle_response(message) -> str:
-    message = message.lower()
-
-    if message == "hello":
-        return "karol ma ogromne uszyska"
+HELLO_RESPONSE = "elo"
+INVALID_COMMAND_RESPONSE = "Nieznana komenda"
+INVALID_ARGUMENT_RESPONSE = "Niepoprawny argument"
+USER_ADDED_RESPONSE = "Gracz został dodany!"
+USER_NOT_FOUND_RESPONSE = "Nie ma takiego użytkownika na tym serwerze"
