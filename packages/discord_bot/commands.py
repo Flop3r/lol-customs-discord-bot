@@ -1,6 +1,6 @@
 import re
 
-from responses import *
+from .responses import *
 
 async def handle_command(message, message_content):
     message_content = message_content.lower()
