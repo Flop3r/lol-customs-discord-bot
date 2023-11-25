@@ -1,18 +1,18 @@
 import discord
 
-from packages import responses
-from packages.global_vars import PREFIX
+from . import responses
+from .global_vars import PREFIX, TOKEN
 
 async def send_message(message, message_content):
     try:
-        response = responses.handle_response(message)
+        response = responses.handle_response(message_content)
         await message.channel.send(response)
 
     except Exception as e:
         print(e)
 
 
-def client_run(TOKEN):
+def client_run():
     intents = discord.Intents.all()
     client = discord.Client(intents=intents)
 
