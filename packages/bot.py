@@ -1,7 +1,7 @@
 import discord
-import responses
 
-from global_vars import PREFIX
+from packages import responses
+from packages.global_vars import PREFIX
 
 async def send_message(message, message_content):
     try:
