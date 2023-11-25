@@ -1,2 +1,2 @@
-# lol-customs-discord-bot
+# League of Legends custom games Discord bot
  
