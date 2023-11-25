@@ -1,2 +1,2 @@
-# Discord bot for handling custom games in League of Legends
+# League of Legends custom games Discord bot
  
