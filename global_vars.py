@@ -1,2 +1,5 @@
-TOKEN = 'MTE3Nzc1NTc4NTU1MjQ3ODI1OA.GblueY.TFb3iYfHMh9DqarMxcj9uhSAB0XPK1d_5c73zk'
+# Set the prefix for bot commands
 PREFIX = '-'
+
+# Place your Discord bot token here
+TOKEN = 'paste_your_bot_token_here'
