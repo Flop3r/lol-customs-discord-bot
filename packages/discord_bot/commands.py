@@ -1,9 +1,8 @@
-import re, requests
+import re
 
 from .responses import *
 from ..game_handler.game import *
-from .global_vars import RIOT_API
-
+from .player_riot_api_handler import *
 async def handle_command(message, message_content):
     message_content = message_content.lower()
 
@@ -61,31 +60,3 @@ def handle_add_command(args, guild) -> str:
         puuid = get_puuid(game_name, tag_line)
         add_player(user_id, puuid, game_name, tag_line)
         return USER_ADDED_RESPONSE
-
-
-
-def is_valid_riot_id(game_name, tag_line):
-    base_url = "https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id"
-    endpoint = f"{game_name}/{tag_line}"
-    url = f"{base_url}/{endpoint}?api_key={RIOT_API}"
-
-    response = requests.get(url)
-    print(response)
-    if response.status_code == 200:
-        print(f"Gracz o nicku {game_name}#{tag_line} istnieje.")
-        return True
-    elif response.status_code == 404:
-        print(f"Gracz o nicku {game_name}#{tag_line} nie istnieje.")
-        return False
-    else:
-        print(f"Błąd podczas sprawdzania gracza. Kod odpowiedzi: {response.status_code}")
-        return False
-
-def get_puuid(game_name, tag_line):
-    base_url = "https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id"
-    endpoint = f"{game_name}/{tag_line}"
-    url = f"{base_url}/{endpoint}?api_key={RIOT_API}"
-
-    response = requests.get(url)
-    data = json.loads(response.content)
-    return data['puuid']
