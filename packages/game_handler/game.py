@@ -1,5 +1,5 @@
 import json
-from packages.discord_bot.embed_responses import *
+from packages.discord_bot.responses import *
 
 # Function to check if a player exists in players_data
 def if_player_exist(user_id, players_data) -> bool:
@@ -44,6 +44,25 @@ def get_players_status() -> dict:
         players_data = {}
 
     return players_data
+
+def get_riot_ids() -> list:
+    try:
+        with open('Data/Players.json', 'r') as file:
+            data = json.load(file)
+
+        riot_ids = []
+
+        for key, value in data.items():
+            game_name = value.get('game_name', '')
+            tag_line = value.get('tag_line', '')
+            riot_ids.append(f"{game_name}#{tag_line}")
+
+        return riot_ids
+
+    except FileNotFoundError as e:
+        print(f"Plik Players.json nie istnieje.")
+        return []
+
 
 def get_riot_id(user_id) -> str:
     try:

@@ -3,12 +3,9 @@ import discord
 # COMMANDS
 HELLO_RESPONSE = "✨🔔🎵 ･ﾟ✧:･.⋆♫⋆｡♪ ₊˚☾˚｡･ﾟ✧:･.🎵🔔✨"
 PONG_RESPONSE = "**PONG!** 🏓"
-
 SET_RIOT_ID_RESPONSE = "**Ups! 😟** Wygląda na to, że podałeś nieprawidłowe **Riot ID**.\nSprawdź, czy używasz formatu: **<nick>#<tag>!** 🔍"
-
 INVALID_ARGUMENT_RESPONSE = "Hmm, coś poszło nie tak z tym argumentem: {}.\nSpróbuj ponownie używając: **set riot_id <wartość>** 🔄"
-
-MISSING_ARGUMENTS_RESPONSE = "Za mało argumentów. Użyj: **{} <argument>** ⚠️"
+MISSING_ARGUMENTS_RESPONSE = "Za mało argumentów. Użyj: **{}** ⚠️"
 ERROR_RESPONSE = "**Ups! 😟 Wystąpił błąd:** {} ❌"
 
 RIOT_ID_RESPONSE_TEMPLATE = "Riot ID przypisane do twojego profilu to: **{}**! 🌐"
@@ -41,9 +38,5 @@ def embedded_response(response, title=None, color=None, thumbnail=None, image=No
 async def embed_reply(message, text="", title=None, color=None, thumbnail=None, image=None, author=None, footer=None):
     embed = embedded_response(text, title, color, thumbnail, image, author, footer)
     await message.reply(embed=embed, mention_author=False)
-
-    # Error function
-async def embed_error_reply(message, error_message, color=None):
-    await embed_reply(message, text=error_message, title="Ups! 😟", color=color)
 
 

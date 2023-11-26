@@ -1,7 +1,9 @@
 import re
-from .embed_responses import *
+
+from packages.riot_api_handler.champions import *
+from packages.riot_api_handler.player import *
 from ..game_handler.game import *
-from .player_riot_api_handler import *
+
 
 async def handle_command(message, command):
     try:
@@ -15,6 +17,10 @@ async def handle_command(message, command):
             await handle_get_command(message, command_args)
         elif main_command == "set":
             await handle_set_command(message, command_args)
+        elif main_command == "list":
+            await handle_list_command(message, command_args)
+        elif main_command == "rotation":
+            await handle_rotation_command(message)
 
     except Exception as e:
         await message.reply(embedded_response(ERROR_RESPONSE.format(str(e))), mention_author=False)
@@ -37,6 +43,7 @@ async def handle_set_command(message, args):
             raise ValueError(MISSING_ARGUMENTS_RESPONSE.format("set <argument> <wartość>"))
 
         argument = args[0]
+        print(argument)
 
         if argument == 'riot_id':
             riot_id = args[1].strip('"')
@@ -50,10 +57,10 @@ async def handle_set_command(message, args):
         else:
             response = INVALID_ARGUMENT_RESPONSE.format(argument)
 
-        await embed_reply(message, response)
+        await embed_reply(message, text= response)
 
     except ValueError as ve:
-        await embed_reply(message, embedded_response(ERROR_RESPONSE.format(str(ve))))
+        await embed_reply(message, ve)
 
 async def handle_get_command(message, args):
     try:
@@ -68,7 +75,6 @@ async def handle_get_command(message, args):
             user_id = str(message.author.id)
             response = get_riot_id(user_id)
             response = RIOT_ID_RESPONSE_TEMPLATE.format(response)
-
         else:
             response = INVALID_ARGUMENT_RESPONSE.format(argument)
 
@@ -76,6 +82,27 @@ async def handle_get_command(message, args):
 
     except ValueError as ve:
         await message.reply(embedded_response(ERROR_RESPONSE.format(str(ve))), mention_author=False)
+
+async def handle_list_command(message, args):
+    try:
+        if len(args) < 1:
+            raise ValueError(MISSING_ARGUMENTS_RESPONSE.format("get <argument>"))
+
+        argument = args[0]
+
+
+        if argument == 'riot_id':
+            response = get_riot_ids()
+        else:
+            response = INVALID_ARGUMENT_RESPONSE.format(argument)
+
+        await embed_reply(message, response)
+
+    except ValueError as ve:
+        await message.reply(embedded_response(ERROR_RESPONSE.format(str(ve))), mention_author=False)
+async def handle_rotation_command(message):
+    champions = get_free_rotation()
+    await embed_reply(message, str(champions))
 
 def decode_riot_id(riot_id):
     try:
