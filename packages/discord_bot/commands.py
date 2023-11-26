@@ -1,62 +1,92 @@
 import re
-
-from .responses import *
+from .embed_responses import *
 from ..game_handler.game import *
 from .player_riot_api_handler import *
-async def handle_command(message, message_content):
-    message_content = message_content.lower()
 
-    # Splitting the message content into a command and a list of arguments
-    command, *args = message_content.split(maxsplit=2)
-
+async def handle_command(message, command):
     try:
-        if command == "hello":
-            await message.reply(HELLO_RESPONSE, mention_author=False)
+        main_command, command_args = parse_command_args(command)
 
-        elif command == "add":
-            response = handle_add_command(args, message.guild)
-            await message.reply(response, mention_author=False)
-
-        elif command == "get_players_data":
-            await message.reply(get_players_data(), mention_author=False)
-
-        elif command == "reset":
-            reset_players_data()
-            await message.reply(RESETED_RESPONSE, mention_author=False)
-
-        else:
-            await message.reply(INVALID_COMMAND_RESPONSE, mention_author=False)
+        if main_command == "hello":
+            await handle_hello_command(message)
+        elif main_command == "ping":
+            await handle_ping_command(message)
+        elif main_command == "get":
+            await handle_get_command(message, command_args)
+        elif main_command == "set":
+            await handle_set_command(message, command_args)
 
     except Exception as e:
-        print(e)
+        await message.reply(embedded_response(ERROR_RESPONSE.format(str(e))), mention_author=False)
 
-def handle_add_command(args, guild) -> str:
-    def is_valid_arg_format(arg) -> bool:
-        return bool(re.match(r'<@(\d{18})>', arg))
+def parse_command_args(command):
+    matches = re.findall(r'\"(.*?)\"|(\S+)', command)
+    command_args = [match[0] if match[0] else match[1] for match in matches]
 
-    def is_valid_arg2_format(arg) -> bool:
-        return bool(re.match(r'^.+#.+$', arg))
+    return command_args[0].lower(), command_args[1:]
 
-    def extract_user_id(arg) -> str:
-        return re.match(r'<@(\d{18})>', arg).group(1)
+async def handle_hello_command(message):
+    await embed_reply(message, HELLO_RESPONSE)
 
-    if len(args) != 2:
-        return INVALID_ARGUMENT_RESPONSE
-    if not is_valid_arg_format(args[0]):
-        return f"{INVALID_ARGUMENT_RESPONSE}: {args[0]}"
-    if not is_valid_arg2_format(args[1]):
-        return f"{INVALID_ARGUMENT_RESPONSE}: {args[1]}"
+async def handle_ping_command(message):
+    await embed_reply(message, PONG_RESPONSE)
 
-    user_id = extract_user_id(args[0])
-    member = guild.get_member(int(user_id))
+async def handle_set_command(message, args):
+    try:
+        if len(args) < 2:
+            raise ValueError(MISSING_ARGUMENTS_RESPONSE.format("set <argument> <wartość>"))
 
-    game_name, tag_line = args[1].split('#')
+        argument = args[0]
 
-    if not member:
-        return USER_NOT_FOUND_RESPONSE
-    elif not is_valid_riot_id(game_name, tag_line):
-        return RIOT_USER_NOT_FOUND_RESPONSE
-    else:
-        puuid = get_puuid(game_name, tag_line)
-        add_player(user_id, puuid, game_name, tag_line)
-        return USER_ADDED_RESPONSE
+        if argument == 'riot_id':
+            riot_id = args[1].strip('"')
+
+            puuid, game_name, tag_line = decode_riot_id(riot_id)
+            if puuid:
+                user_id = str(message.author.id)
+                response = set_riot_id(user_id, puuid, game_name, tag_line)
+            else:
+                response = SET_RIOT_ID_RESPONSE
+        else:
+            response = INVALID_ARGUMENT_RESPONSE.format(argument)
+
+        await embed_reply(message, response)
+
+    except ValueError as ve:
+        await embed_reply(message, embedded_response(ERROR_RESPONSE.format(str(ve))))
+
+async def handle_get_command(message, args):
+    try:
+        if len(args) < 1:
+            raise ValueError(MISSING_ARGUMENTS_RESPONSE.format("get <argument>"))
+
+        argument = args[0]
+
+        if argument == 'players_status':
+            response = get_players_status()
+        elif argument == 'riot_id':
+            user_id = str(message.author.id)
+            response = get_riot_id(user_id)
+            response = RIOT_ID_RESPONSE_TEMPLATE.format(response)
+
+        else:
+            response = INVALID_ARGUMENT_RESPONSE.format(argument)
+
+        await embed_reply(message, response)
+
+    except ValueError as ve:
+        await message.reply(embedded_response(ERROR_RESPONSE.format(str(ve))), mention_author=False)
+
+def decode_riot_id(riot_id):
+    try:
+        riot_id = riot_id.strip('"')
+        game_name, tag_line = riot_id.split('#')
+
+        if is_valid_riot_id(game_name, tag_line):
+            puuid = get_puuid(game_name, tag_line)
+            return puuid, game_name, tag_line
+        else:
+            return None, None, None
+
+    except ValueError:
+        return None, None, None

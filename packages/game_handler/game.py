@@ -1,28 +1,61 @@
 import json
+from packages.discord_bot.embed_responses import *
 
-def add_player(discord_id, puuid, game_name, tag_line):
+# Function to check if a player exists in players_data
+def if_player_exist(user_id, players_data) -> bool:
+    return user_id in players_data
+
+# SETTERS - functions
+
+def set_riot_id(user_id, puuid, game_name, tag_line) -> str:
     try:
-        with open('Data/Players.json', 'r') as json_file:
+        with open('Data/Players.json', 'r', encoding='utf-8') as json_file:
             players_data = json.load(json_file)
-    except FileNotFoundError:
+    except Exception as e:
+        print(FILE_ERROR_RESPONSE.format(str(e)))
         players_data = {}
 
-    players_data[discord_id] = {
-        'puuid': puuid,
-        'game_name': game_name,
-        'tag_line': tag_line,
-        'total_games': 0,
-        'wins': 0,
-        'loses': 0
-    }
+    if not if_player_exist(user_id, players_data):
+        # Add the player if they don't exist
+        players_data[user_id] = {'puuid': puuid, 'game_name': game_name, 'tag_line': tag_line}
+    else:
+        # Update the existing player data
+        players_data[user_id]['puuid'] = puuid
+        players_data[user_id]['game_name'] = game_name
+        players_data[user_id]['tag_line'] = tag_line
 
-    with open('Data/Players.json', 'w') as json_file:
-        json.dump(players_data, json_file, indent=2)
+    try:
+        with open('Data/Players.json', 'w', encoding='utf-8') as json_file:
+            json.dump(players_data, json_file, ensure_ascii=False, indent=4)
+    except Exception as e:
+        print(FILE_ERROR_RESPONSE.format(str(e)))
+        return SAVING_FILE_ERROR_RESPONSE
 
-def get_players_data():
-    with open('Data/Players.json', 'r') as file:
-        return json.load(file)
+    return RIOT_ID_CHANGED_RESPONSE.format(game_name, tag_line)
 
-def reset_players_data():
-    with open('Data/Players.json', 'w') as json_file:
-        json.dump({}, json_file, indent=2)
+# GETTERS - functions
+
+def get_players_status() -> dict:
+    try:
+        with open('Data/Players.json', 'r', encoding='utf-8') as json_file:
+            players_data = json.load(json_file)
+    except Exception as e:
+        print(FILE_ERROR_RESPONSE.format(str(e)))
+        players_data = {}
+
+    return players_data
+
+def get_riot_id(user_id) -> str:
+    try:
+        with open('Data/Players.json', 'r', encoding='utf-8') as json_file:
+            players_data = json.load(json_file)
+    except Exception as e:
+        print(FILE_ERROR_RESPONSE.format(str(e)))
+        players_data = {}
+
+    if if_player_exist(user_id, players_data):
+        game_name = players_data[user_id]['game_name']
+        tag_line = players_data[user_id]['tag_line']
+
+        return f"{game_name}#{tag_line.upper()}"
+    return INVALID_PLAYER_RESPONSE
